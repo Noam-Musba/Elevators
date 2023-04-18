@@ -1,1 +1,51 @@
+body {
+  background-color: #dedede;
+}
+
+table {
+  position: relative;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+caption {
+  padding: 25px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+tbody {
+  background-color: #ffffff;
+}
+
+th {
+  background-color: #dedede;
+  text-align: right;
+  padding: 15px;
+}
+
+button {
+  color: #ffffff;
+  background-color: #25ea17a5;
+  border: none;
+  border-radius: 3px;
+  width: 75px;
+  height: 30px;
+}
+
+td {
+  width: 100px;
+  height: 50px;
+  border: 1px solid #dedede;
+  text-align: center;
+  font-size: 16px;
+  padding: 10px;
+}
+
+img {
+	max-width: 30%;
+}
+
+
 

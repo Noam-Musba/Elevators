@@ -1,13 +1,66 @@
 <!DOCTYPE html>
 <html lang="en-us">
-	<head>
-		<meta charset="utf-8" />
-		<title>Elevators Exercise</title>
-		<link rel="stylesheet" href="ElevatorsStyles.css" />
-	</head>
+  <head>
+    <meta charset="utf-8" />
+    <title>Elevators Exercise</title>
+    <link rel="stylesheet" href="ElevatorsStyles.css" />
+  </head>
+
+  <body>
+    <table>
+      <caption>
+        <strong>Elevator Exercise</strong>
+      </caption>
+      <tbody>
+        <tr>
+          <th class="left">3rd</th>
+          <td></td>
+          <th class="right">
+            <button id="button3">Call</button>
+          </th>
+        </tr>
+        <tr>
+          <th class="left">2nd</th>
+          <td></td>
+          <th class="right">
+            <button id="button2">Call</button>
+          </th>
+        </tr>
+        <tr>
+          <th class="left">1st</th>
+          <td></td>
+          <th class="right">
+            <button id="button1">Call</button>
+          </th>
+        </tr>
+        <tr>
+          <th class="left">Ground Floor</th>
+          <td>
+		  <img 
+			src="iconElevator.svg" alt="an elevator">
+		  </td>
+          <th class="right">
+            <button id="buttonG">Call</button>
+          </th>
+        </tr>
+      </tbody>
+    </table>
+	
+	<script>
+		const buttons = document.querySelectorAll("button");
+		
+		function calledAnElevator(event){
+			event.target.style.backgroundColor = "red";
+			event.target.textContent = "Waiting";
+		}
+		
+		buttons.forEach(button => {
+			button.addEventListener('click', calledAnElevator)
+		});
+		
 	
 	
+	</script>
 	
-	
-	
+  </body>
 </html>
