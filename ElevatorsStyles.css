@@ -10,7 +10,9 @@ table {
 }
 
 caption {
-  padding: 25px;
+  font-size: 25px;
+  font-family: arial; /*TODO: find the font*/
+  padding: 45px;
   text-align: center;
   white-space: nowrap;
 }
