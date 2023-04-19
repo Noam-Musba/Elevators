@@ -20,7 +20,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button9">Call</button>
+            <button id="9">Call</button>
           </th>
         </tr>
 		<tr>
@@ -31,7 +31,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button8">Call</button>
+            <button id="8">Call</button>
           </th>
         </tr>
 		<tr>
@@ -42,7 +42,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button7">Call</button>
+            <button id="7">Call</button>
           </th>
         </tr>
 		<tr>
@@ -53,7 +53,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button6">Call</button>
+            <button id="6">Call</button>
           </th>
         </tr>
 		<tr>
@@ -64,7 +64,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button5">Call</button>
+            <button id="5">Call</button>
           </th>
         </tr>
 		<tr>
@@ -75,7 +75,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button4">Call</button>
+            <button id="4">Call</button>
           </th>
         </tr>
         <tr>
@@ -86,7 +86,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="button3">Call</button>
+            <button id="3">Call</button>
           </th>
         </tr>
         <tr>
@@ -97,7 +97,7 @@
 		  <td></td>
           <td></td>
           <th class="right">
-            <button id="button2">Call</button>
+            <button id="2">Call</button>
           </th>
         </tr>
         <tr>
@@ -108,44 +108,93 @@
 		  <td></td>
           <td></td>
           <th class="right">
-            <button id="button1">Call</button>
+            <button id="1">Call</button>
           </th>
         </tr>
         <tr>
           <th class="left">Ground Floor</th>
 		  <td>
-		  <img 
-			src="iconElevator.svg" alt="an elevator">
+		    <svg id="1" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+			  <image href="iconElevator.svg" alt="an elevator">
+			</svg>
 		  </td>
 		  <td>
-		  <img 
-			src="iconElevator.svg" alt="an elevator">
+		    <svg id="2" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+			  <image href="iconElevator.svg" alt="an elevator">
+			</svg>
 		  </td>
 		  <td>
-		  <img 
-			src="iconElevator.svg" alt="an elevator">
+		    <svg id="3" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+			  <image href="iconElevator.svg" alt="an elevator">
+			</svg>
 		  </td>
 		  <td>
-		  <img 
-			src="iconElevator.svg" alt="an elevator">
+		    <svg id="4" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+			  <image href="iconElevator.svg" alt="an elevator">
+			</svg>
 		  </td>
           <td>
-		  <img 
-			src="iconElevator.svg" alt="an elevator">
+		    <svg id="5" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+			  <image href="iconElevator.svg" alt="an elevator">
+			</svg>
 		  </td>
           <th class="right">
-            <button id="buttonG">Call</button>
+            <button id="0">Call</button>
           </th>
         </tr>
       </tbody>
     </table>
 	
 	<script>
+		// Get the computed value of --cell-height from the :root pseudo-element
+		const rootStyles = getComputedStyle(document.documentElement);
+		const cellHeight = parseInt(rootStyles.getPropertyValue('--cell-height'));
 		const buttons = document.querySelectorAll("button");
+		const elevators = document.querySelectorAll("svg");
+		
+		let freeElevatorsPos = {0: [1,2,3,4,5]};
+		for(let i = 1; i<10; i++){
+			freeElevatorsPos[i] = [];
+		}
+		
+		let busyElevators = [];
+		
+		const timeOfElev = 3000; // MIGHT NEED TO CHANGE LATER
+		const greenDelay = 2000;
+		
+		function closestElevator(lvl){
+			
+		}
 		
 		function calledAnElevator(event){
-			event.target.style.backgroundColor = "red";
-			event.target.textContent = "Waiting";
+			const curr_button = event.target;
+			curr_button.style.backgroundColor = "red";
+			curr_button.style.borderColor = "red";
+			curr_button.textContent = "Waiting";
+			let level = -1.42 * Number(event.target.id) * cellHeight;
+			elevators[0].style.transform = `translate(${0}px, ${level}px)`;
+			//elevators[0].style.transition = `all ${event.target.id}s ease-out`; //TODO: change the time to be constant for each lvl
+			elevators[0].style.backgroundColor = "red";
+			setTimeout(() => {
+				elevators[0].style.backgroundColor = "lightgreen";
+				curr_button.style.backgroundColor = "#dedede";
+				curr_button.style.borderColor = "";
+				curr_button.style.color = "#25ea17a5";
+				curr_button.style.fontWeight = "bold";
+				curr_button.textContent = "Arrived";
+				setTimeout(() => {
+				  elevators[0].style.backgroundColor = "";
+				  curr_button.textContent = "Call";
+				  curr_button.style.fontWeight = "";
+				  curr_button.style.color = "";
+				  curr_button.style.backgroundColor = "";
+				  
+				}, greenDelay);
+			}, timeOfElev);
+			
+			
+			//to add- "timeStamp"
+			
 		}
 		
 		buttons.forEach(button => {
