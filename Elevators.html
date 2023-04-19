@@ -114,6 +114,11 @@
         <tr>
           <th class="left">Ground Floor</th>
 		  <td>
+		    <svg id="0" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+			  <image href="iconElevator.svg" alt="an elevator">
+			</svg>
+		  </td>
+		  <td>
 		    <svg id="1" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
 			  <image href="iconElevator.svg" alt="an elevator">
 			</svg>
@@ -128,13 +133,8 @@
 			  <image href="iconElevator.svg" alt="an elevator">
 			</svg>
 		  </td>
-		  <td>
-		    <svg id="4" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
-			  <image href="iconElevator.svg" alt="an elevator">
-			</svg>
-		  </td>
           <td>
-		    <svg id="5" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+		    <svg id="4" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
 			  <image href="iconElevator.svg" alt="an elevator">
 			</svg>
 		  </td>
@@ -149,46 +149,70 @@
 		// Get the computed value of --cell-height from the :root pseudo-element
 		const rootStyles = getComputedStyle(document.documentElement);
 		const cellHeight = parseInt(rootStyles.getPropertyValue('--cell-height'));
+		
 		const buttons = document.querySelectorAll("button");
 		const elevators = document.querySelectorAll("svg");
 		
-		let freeElevatorsPos = {0: [1,2,3,4,5]};
+		let freeElevatorsPos = {0: [0,1,2,3,4]};
 		for(let i = 1; i<10; i++){
 			freeElevatorsPos[i] = [];
 		}
 		
 		let busyElevators = [];
 		
+		let buttonQueue = [];
+		
 		const timeOfElev = 3000; // MIGHT NEED TO CHANGE LATER
 		const greenDelay = 2000;
 		
 		function closestElevator(lvl){
-			
+			let closest = 0;
+			for(let i = 1; i<10; i++){
+				if(freeElevatorsPos[i].length != 0 && Math.abs(lvl-i) < Math.abs(lvl-closest)){
+					closest = i;
+				}
+			}
+			let elevId = freeElevatorsPos[closest].shift();
+			busyElevators.push(elevId);
+			return elevId;
 		}
 		
 		function calledAnElevator(event){
-			const curr_button = event.target;
+			let curr_button = event.target;
+			if(buttonQueue.length != 0){
+				buttonQueue.push(event.target);
+				if(busyElevators.length < 5)
+					curr_button = buttonQueue.shift();
+			}
+			if(busyElevators.length === 5){
+				return;
+			}
+			
+			wantedElevId = closestElevator(curr_button.id);
+			curr_button.disabled = true;
 			curr_button.style.backgroundColor = "red";
 			curr_button.style.borderColor = "red";
 			curr_button.textContent = "Waiting";
-			let level = -1.42 * Number(event.target.id) * cellHeight;
-			elevators[0].style.transform = `translate(${0}px, ${level}px)`;
+			let level = -1.42 * Number(curr_button.id) * cellHeight;
+			elevators[wantedElevId].style.transform = `translate(${0}px, ${level}px)`;
 			//elevators[0].style.transition = `all ${event.target.id}s ease-out`; //TODO: change the time to be constant for each lvl
-			elevators[0].style.backgroundColor = "red";
+			elevators[wantedElevId].style.backgroundColor = "red";
 			setTimeout(() => {
-				elevators[0].style.backgroundColor = "lightgreen";
+				elevators[wantedElevId].style.backgroundColor = "lightgreen";
 				curr_button.style.backgroundColor = "#dedede";
 				curr_button.style.borderColor = "";
 				curr_button.style.color = "#25ea17a5";
 				curr_button.style.fontWeight = "bold";
 				curr_button.textContent = "Arrived";
 				setTimeout(() => {
-				  elevators[0].style.backgroundColor = "";
+				  elevators[wantedElevId].style.backgroundColor = "";
 				  curr_button.textContent = "Call";
 				  curr_button.style.fontWeight = "";
 				  curr_button.style.color = "";
 				  curr_button.style.backgroundColor = "";
-				  
+				  curr_button.disabled = false;
+				  busyElevators.shift();
+				  freeElevatorsPos[curr_button.id].push(wantedElevId);
 				}, greenDelay);
 			}, timeOfElev);
 			
