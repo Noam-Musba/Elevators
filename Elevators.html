@@ -20,7 +20,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="9">Call</button>
+            <button id="9" class="myButtons">Call</button>
           </th>
         </tr>
 		<tr>
@@ -31,7 +31,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="8">Call</button>
+            <button id="8" class="myButtons">Call</button>
           </th>
         </tr>
 		<tr>
@@ -42,7 +42,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="7">Call</button>
+            <button id="7" class="myButtons">Call</button>
           </th>
         </tr>
 		<tr>
@@ -53,7 +53,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="6">Call</button>
+            <button id="6" class="myButtons">Call</button>
           </th>
         </tr>
 		<tr>
@@ -64,7 +64,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="5">Call</button>
+            <button id="5" class="myButtons">Call</button>
           </th>
         </tr>
 		<tr>
@@ -75,7 +75,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="4">Call</button>
+            <button id="4" class="myButtons">Call</button>
           </th>
         </tr>
         <tr>
@@ -86,7 +86,7 @@
           <td></td>
 		  <td></td>
           <th class="right">
-            <button id="3">Call</button>
+            <button id="3" class="myButtons">Call</button>
           </th>
         </tr>
         <tr>
@@ -97,7 +97,7 @@
 		  <td></td>
           <td></td>
           <th class="right">
-            <button id="2">Call</button>
+            <button id="2" class="myButtons">Call</button>
           </th>
         </tr>
         <tr>
@@ -108,7 +108,7 @@
 		  <td></td>
           <td></td>
           <th class="right">
-            <button id="1">Call</button>
+            <button id="1" class="myButtons">Call</button>
           </th>
         </tr>
         <tr>
@@ -139,7 +139,7 @@
 			</svg>
 		  </td>
           <th class="right">
-            <button id="0">Call</button>
+            <button id="0" class="myButtons">Call</button>
           </th>
         </tr>
       </tbody>
@@ -150,6 +150,8 @@
 		const rootStyles = getComputedStyle(document.documentElement);
 		const cellHeight = parseInt(rootStyles.getPropertyValue('--cell-height'));
 		
+		
+		//const pButton = document.querySelector(".myButtons");
 		const buttons = document.querySelectorAll("button");
 		const elevators = document.querySelectorAll("svg");
 		
@@ -164,36 +166,46 @@
 		
 		const timeOfElev = 3000; // MIGHT NEED TO CHANGE LATER
 		const greenDelay = 2000;
+		const waitDelay = 500;
 		
 		function closestElevator(lvl){
+			while(busyElevators.length === 5){
+				setTimeout(() => {}, waitDelay);
+			}
 			let closest = 0;
 			for(let i = 1; i<10; i++){
 				if(freeElevatorsPos[i].length != 0 && Math.abs(lvl-i) < Math.abs(lvl-closest)){
 					closest = i;
 				}
 			}
-			let elevId = freeElevatorsPos[closest].shift();
+			let elevId = Number(freeElevatorsPos[closest].shift());
 			busyElevators.push(elevId);
 			return elevId;
 		}
 		
 		function calledAnElevator(event){
 			let curr_button = event.target;
-			if(buttonQueue.length != 0){
-				buttonQueue.push(event.target);
-				if(busyElevators.length < 5)
-					curr_button = buttonQueue.shift();
-			}
-			if(busyElevators.length === 5){
-				return;
-			}
 			
-			wantedElevId = closestElevator(curr_button.id);
 			curr_button.disabled = true;
 			curr_button.style.backgroundColor = "red";
 			curr_button.style.borderColor = "red";
 			curr_button.textContent = "Waiting";
-			let level = -1.42 * Number(curr_button.id) * cellHeight;
+			
+			/*check if there is a free elevator. if not- add button to queue
+			if(busyElevators.length === 5){
+				buttonQueue.push(curr_button);
+				setTimeout(() => {}, greenDelay);
+				//return;
+			}*/
+			/*check if there is a button that already waits for a response*/
+			if(buttonQueue.length != 0){
+				buttonQueue.push(curr_button);
+				curr_button = buttonQueue.shift();
+			}
+			
+			const wantedElevId = closestElevator(curr_button.id);
+
+			const level = -1.42 * Number(curr_button.id) * cellHeight;
 			elevators[wantedElevId].style.transform = `translate(${0}px, ${level}px)`;
 			//elevators[0].style.transition = `all ${event.target.id}s ease-out`; //TODO: change the time to be constant for each lvl
 			elevators[wantedElevId].style.backgroundColor = "red";
@@ -211,7 +223,8 @@
 				  curr_button.style.color = "";
 				  curr_button.style.backgroundColor = "";
 				  curr_button.disabled = false;
-				  busyElevators.shift();
+				  const index = busyElevators.indexOf(wantedElevId);
+				  busyElevators.splice(index, 1);
 				  freeElevatorsPos[curr_button.id].push(wantedElevId);
 				}, greenDelay);
 			}, timeOfElev);
@@ -220,6 +233,9 @@
 			//to add- "timeStamp"
 			
 		}
+		
+		//pButton.addEventListener('click', calledAnElevator);
+		
 		
 		buttons.forEach(button => {
 			button.addEventListener('click', calledAnElevator)
