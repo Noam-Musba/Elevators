@@ -7,6 +7,11 @@
   </head>
 
   <body>
+	<div class="timeDisplay" id="1"></div>
+	<div class="timeDisplay" id="2"></div>
+	<div class="timeDisplay" id="3"></div>
+	<div class="timeDisplay" id="4"></div>
+	<div class="timeDisplay" id="5"></div>
     <table>
       <caption>
         <strong>Elevator Exercise</strong>
@@ -150,7 +155,6 @@
 		const cellHeight = parseInt(rootStyles.getPropertyValue('--cell-height'));
 		
 		
-		//const pButton = document.querySelector(".myButtons");
 		const buttons = document.querySelectorAll("button");
 		const elevators = document.querySelectorAll("svg");
 		
@@ -166,6 +170,17 @@
 		const timeOfElev = 3000; // MIGHT NEED TO CHANGE LATER
 		const greenDelay = 2000;
 		const waitDelay = 500;
+		
+		const timerElement = document.querySelectorAll('timeDisplay');
+		let startTime = 0;
+		let intervalId = 0;
+		let elevatorTimers = [];
+		
+		function busyButton(button){
+			button.style.backgroundColor = "red";
+			button.style.borderColor = "red";
+			button.textContent = "Waiting";
+		}
 		
 		function closestElevator(lvl){
 			/*
@@ -198,13 +213,62 @@
 			return elevId;
 		}
 		
+		function elevatorAnimation(elevatorId, lvl){
+			const level = -1.42 * Number(lvl) * cellHeight;
+			elevators[elevatorId].style.transform = `translate(${0}px, ${level}px)`;
+			elevators[elevatorId].style.backgroundColor = "red";
+		}
+		
+		function startTimer() {
+			startTime = Date.now(); // set the start time to the current time
+			intervalId = setInterval(updateTimer, 1000); // update the timer every second
+		}
+		
+		function updateTimer() {
+			/*let elapsed = Date.now() - startTime; // calculate the elapsed time in milliseconds
+			timerElement.style.transform = "translate(233px,110px)";
+			timerElement.textContent = (elapsed / 1000).toFixed(1) + "s";*/ // display the elapsed time in seconds with one decimal point
+			
+			let currentTime = performance.now();
+			for (let i = 0; i < elevatorTimers.length; i++) {
+				let timer = elevatorTimers[i];
+				let timeDiff = Math.floor((currentTime - timer.start) / 1000); // convert to seconds
+				let timerEl = document.getElementById(`timer-${timer.elevator}-${timer.floor}`);
+				timerEl.textContent = timeDiff + 's';
+			}
+			setTimeout(updateTimers, 1000); // update timers every second
+		}
+		
+		function elevatorArrived(wantedElevId, curr_button){
+			elevators[wantedElevId].style.backgroundColor = "lightgreen";
+			curr_button.style.backgroundColor = "#dedede";
+			curr_button.style.borderColor = "";
+			curr_button.style.color = "mediumSeaGreen";
+			curr_button.style.fontWeight = "bold";
+			curr_button.textContent = "Arrived";
+		}
+		
+		function resetElevButton(wantedElevId, curr_button){
+			elevators[wantedElevId].style.backgroundColor = "";
+			curr_button.textContent = "Call";
+			curr_button.style.fontWeight = "";
+			curr_button.style.color = "";
+			curr_button.style.backgroundColor = "";
+			curr_button.disabled = false;
+		}
+		
 		function calledAnElevator(event){
 			let curr_button = event.target;
 			
-			//curr_button.disabled = true;
-			curr_button.style.backgroundColor = "red";
-			curr_button.style.borderColor = "red";
-			curr_button.textContent = "Waiting";
+			/* time stuff 
+			let timerStart = null;
+			timerStart = performance.now();
+			let elapsedTime = performance.now() - timerStart;
+			document.getElementById('timeDisplay').textContent = `${elapsedTime}ms`;*/
+	
+			//startTimer();
+
+			busyButton(curr_button);
 			
 			/*check if there is a free elevator. if not- add button to queue*/
 			if(busyElevators.length === 5){
@@ -212,52 +276,55 @@
 					buttonQueue.push(curr_button.id);
 				return;
 			}
-			/*check if there is a button that already waits for a response
-			if(buttonQueue.length != 0){
-				if(buttonQueue.indexOf(curr_button) === -1)
-					buttonQueue.push(curr_button);
-				curr_button = buttonQueue.shift();
-			}*/
 			
 			const wantedElevId = closestElevator(curr_button.id);
 			if(wantedElevId === -1){
 				return;
 			}
+			
+			/*~~~~~~~~~~~~~~~~~~~~~~~ timeeee ~~~~~~~~~~~~~~~~~~
+			let timer = {
+				start: performance.now(), // start time
+				elevator: wantedElevId, // elevator number
+				floor: curr_button.id // floor number
+			};
+			elevatorTimers.push(timer);
+			intervalId = setInterval(updateTimer, 1000);*/
+
 			curr_button.disabled = true;
-			const level = -1.42 * Number(curr_button.id) * cellHeight;
-			elevators[wantedElevId].style.transform = `translate(${0}px, ${level}px)`;
-			//elevators[0].style.transition = `all ${event.target.id}s ease-out`; //TODO: change the time to be constant for each lvl
-			elevators[wantedElevId].style.backgroundColor = "red";
+			
+			elevatorAnimation(wantedElevId, curr_button.id);
+			
 			setTimeout(() => {
 				const sound = new Audio('ding.mp3');
 				sound.play();
-				elevators[wantedElevId].style.backgroundColor = "lightgreen";
-				curr_button.style.backgroundColor = "#dedede";
-				curr_button.style.borderColor = "";
-				curr_button.style.color = "mediumSeaGreen";
-				curr_button.style.fontWeight = "bold";
-				curr_button.textContent = "Arrived";
 				
+				/*time stuff
+				elapsedTime = performance.now() - timerStart;
+				document.getElementById('timeDisplay').textContent = `${elapsedTime}ms`;
+				timerStart = null;
+				clearInterval(intervalId);
+				startTime = null;*/
+				
+				elevatorArrived(wantedElevId, curr_button);
+				
+				/*~~~~~~~~~~~~~~~~~~ time ~~~~~~~~~~~~~~~~~
+				for (let i = 0; i < elevatorTimers.length; i++) {
+					let timer = elevatorTimers[i];
+					if (timer.elevator === elevatorNumber && timer.floor === floorNumber) {
+						elevatorTimers.splice(i, 1);
+						break;
+					}
+				}*/
 				setTimeout(() => {
-				  elevators[wantedElevId].style.backgroundColor = "";
-				  curr_button.textContent = "Call";
-				  curr_button.style.fontWeight = "";
-				  curr_button.style.color = "";
-				  curr_button.style.backgroundColor = "";
-				  curr_button.disabled = false;
-				  const index = busyElevators.indexOf(wantedElevId);
-				  busyElevators.splice(index, 1);
-				  freeElevatorsPos[curr_button.id].push(wantedElevId);
+					resetElevButton(wantedElevId, curr_button)
+					
+					const index = busyElevators.indexOf(wantedElevId);
+					busyElevators.splice(index, 1);
+					freeElevatorsPos[curr_button.id].push(wantedElevId);
 				}, greenDelay);
 			}, timeOfElev);
-			
-			
-			//to add- "timeStamp"
-			
 		}
-		
-		//pButton.addEventListener('click', calledAnElevator);
-		
 		
 		buttons.forEach(button => {
 			button.addEventListener('click', calledAnElevator)
@@ -272,8 +339,6 @@
 		
 		setInterval(checkButtonQueue, 500);
 		
-	
-	
 	</script>
 	
   </body>
