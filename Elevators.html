@@ -144,7 +144,6 @@
         </tr>
       </tbody>
     </table>
-	
 	<script>
 		// Get the computed value of --cell-height from the :root pseudo-element
 		const rootStyles = getComputedStyle(document.documentElement);
@@ -230,12 +229,15 @@
 			//elevators[0].style.transition = `all ${event.target.id}s ease-out`; //TODO: change the time to be constant for each lvl
 			elevators[wantedElevId].style.backgroundColor = "red";
 			setTimeout(() => {
+				const sound = new Audio('ding.mp3');
+				sound.play();
 				elevators[wantedElevId].style.backgroundColor = "lightgreen";
 				curr_button.style.backgroundColor = "#dedede";
 				curr_button.style.borderColor = "";
-				curr_button.style.color = "#25ea17a5";
+				curr_button.style.color = "mediumSeaGreen";
 				curr_button.style.fontWeight = "bold";
 				curr_button.textContent = "Arrived";
+				
 				setTimeout(() => {
 				  elevators[wantedElevId].style.backgroundColor = "";
 				  curr_button.textContent = "Call";
