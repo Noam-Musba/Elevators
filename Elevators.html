@@ -169,42 +169,67 @@
 		const waitDelay = 500;
 		
 		function closestElevator(lvl){
+			/*
 			while(busyElevators.length === 5){
 				setTimeout(() => {}, waitDelay);
-			}
+				break;
+			}*/
 			let closest = 0;
+			while(closest < 10 && freeElevatorsPos[closest].length === 0){
+					closest++;
+				}
+			if(closest === 10){
+				return -1;
+			}
 			for(let i = 1; i<10; i++){
 				if(freeElevatorsPos[i].length != 0 && Math.abs(lvl-i) < Math.abs(lvl-closest)){
 					closest = i;
 				}
 			}
+			/*if(freeElevatorsPos[closest].length === 0){
+				return closestElevator(lvl);
+			}
+			if(lvl === 4){
+				console.log(`closest is: ${closest}`);
+			}*/
+			console.log(`closest is: ${closest}`);
 			let elevId = Number(freeElevatorsPos[closest].shift());
+			if(elevId != 0 && !elevId)
+				return -1;
 			busyElevators.push(elevId);
+			console.log(elevId);
 			return elevId;
 		}
 		
 		function calledAnElevator(event){
+			console.log("100");
 			let curr_button = event.target;
 			
-			curr_button.disabled = true;
+			//curr_button.disabled = true;
 			curr_button.style.backgroundColor = "red";
 			curr_button.style.borderColor = "red";
 			curr_button.textContent = "Waiting";
 			
-			/*check if there is a free elevator. if not- add button to queue
+			/*check if there is a free elevator. if not- add button to queue*/
 			if(busyElevators.length === 5){
-				buttonQueue.push(curr_button);
-				setTimeout(() => {}, greenDelay);
-				//return;
-			}*/
-			/*check if there is a button that already waits for a response*/
-			if(buttonQueue.length != 0){
-				buttonQueue.push(curr_button);
-				curr_button = buttonQueue.shift();
+				if(buttonQueue.indexOf(curr_button) === -1) //dont add duplicates
+					console.log("add to q");
+					buttonQueue.push(curr_button.id);
+				return;
 			}
+			/*check if there is a button that already waits for a response
+			if(buttonQueue.length != 0){
+				if(buttonQueue.indexOf(curr_button) === -1)
+					buttonQueue.push(curr_button);
+				curr_button = buttonQueue.shift();
+			}*/
 			
 			const wantedElevId = closestElevator(curr_button.id);
-
+			if(wantedElevId === -1){
+				console.log(`the button that caused it is: ${curr_button.id}`);
+				return;
+			}
+			curr_button.disabled = true;
 			const level = -1.42 * Number(curr_button.id) * cellHeight;
 			elevators[wantedElevId].style.transform = `translate(${0}px, ${level}px)`;
 			//elevators[0].style.transition = `all ${event.target.id}s ease-out`; //TODO: change the time to be constant for each lvl
@@ -240,6 +265,18 @@
 		buttons.forEach(button => {
 			button.addEventListener('click', calledAnElevator)
 		});
+		
+		function checkButtonQueue(){
+			if (buttonQueue.length != 0) {
+				const id = buttonQueue.shift();
+				console.log(`the id is: ${id}`);
+				console.log(`the free elevators[9] are: ${freeElevatorsPos[9]}`);
+				
+				buttons[9-id].click();
+			}
+		}
+		
+		setInterval(checkButtonQueue, 500);
 		
 	
 	
