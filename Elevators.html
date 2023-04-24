@@ -158,11 +158,7 @@
 		const buttons = document.querySelectorAll("button");
 		const elevators = document.querySelectorAll("svg");
 		
-		/*
-		let freeElevatorsPos = {0: [0,1,2,3,4]};
-		for(let i = 1; i<10; i++){
-			freeElevatorsPos[i] = [];
-		}*/
+		// initiate all the elevators on the ground floor (0)
 		let freeElevatorsPos = {};
 		for(let i = 0; i<5; i++){
 			freeElevatorsPos[i] = 0;
@@ -170,115 +166,104 @@
 		
 		let busyElevators = [];
 		
+		// a queue set of all the id's of buttons that are waiting for some elevator to respond to. 
 		let buttonQueue = new Set();
 		
 		let elevatorsVelocity = [3,3,3,3,3]; // base stats: it takes 3 second to reach 1 floor
-		const timeOfElev = 3000; // MIGHT NEED TO CHANGE LATER
-		const greenDelay = 2000;
-		const waitDelay = 500;
 		
-		const timerElement = document.querySelectorAll('timeDisplay');
-		let startTime = 0;
-		let intervalId = 0;
+		// delay to show the "arrived" button etc.
+		const greenDelay = 2000;
+		
+		/* next line tried to prepare the code to also *show* the time of each elevator
+		const timerElement = document.querySelectorAll('timeDisplay');*/
+		
+		/*	two variables that help measuring the time it took for each elevator to reach its destination:
+			elevatorStartTime: starting time of which an elevator started responding
+			elevatorTimers: the time it took for each elevator to reach its last destination
+			both starting with 5 values (5 elevators) of 0	*/
 		let elevatorStartTime = [0,0,0,0,0];
 		let elevatorTimers = [0,0,0,0,0];
 		
+		// changes in style for a button that is now busy
 		function busyButton(button){
 			button.style.backgroundColor = "red";
 			button.style.borderColor = "red";
 			button.textContent = "Waiting";
 		}
 		
+		// find the closest elevator to the level the calling button is in
 		function closestElevator(lvl){
-			if(busyElevators.length === 5){
+			if(busyElevators.length === 5){ // no free elevtor to response
 				return -1;
 			}
 			
 			let elev = 0;
-			
-			while(elev < 5 && freeElevatorsPos[elev] === -1){ //find the first free elevator
+			// find the first free elevator
+			while(elev < 5 && freeElevatorsPos[elev] === -1){ 
 				elev++;
 			}
 			if(elev === 5){
 				return -1;
 			}
 			
-			for(let i = elev + 1; i<5; i++){
+			// find the closest elevator
+			for(let i = elev + 1; i<5; i++){ 
 				if(freeElevatorsPos[i] != -1 && Math.abs(lvl-freeElevatorsPos[elev]) > Math.abs(lvl-freeElevatorsPos[i])){
 					elev = i;
 				}
 			}
-			if(freeElevatorsPos[elev] === -1){
+			
+			// some other button took this elevator right before us
+			if(freeElevatorsPos[elev] === -1){ 
 				return -1;
 			}
-			else{
+			// we found our elevator, so now its busy
+			else{ 
 				busyElevators.push(elev);
 				return elev;
 			}
-		/*
-			let closest = 0;
-			while(closest < 10 && freeElevatorsPos[closest].length === 0){
-					closest++;
-				}
-			if(closest === 10){
-				return -1;
-			}
-			for(let i = 1; i<10; i++){
-				if(freeElevatorsPos[i].length != 0 && Math.abs(lvl-i) < Math.abs(lvl-closest)){
-					closest = i;
-				}
-			}
-			let elevId = Number(freeElevatorsPos[closest].shift());
-			if(elevId != 0 && !elevId)
-				return -1;
-			busyElevators.push(elevId);
-			return elevId;*/
 		}
 		
+		// make elevator smoothly go over to the level that its button called it
 		function elevatorAnimation(elevatorId, lvl){
+			// difference of levels between the elevator and the destination
 			const numOfLvls = Math.abs(Number(lvl)-freeElevatorsPos[elevatorId]);
 			freeElevatorsPos[elevatorId] = -1;
 			const velocity = numOfLvls * 3; //3 is the time between 2 adjacent levels(lvls)
+			
+			// change the time for the elevator to reach its destination according to the distance
 			elevators[elevatorId].style.transition = `transform ${velocity}s ease-out`;
+			
+			// make the animation happen and paint the elevator in red
 			const level = -1.42 * Number(lvl) * cellHeight;
-			
-			
 			elevatorsVelocity[elevatorId] = velocity;
 			elevators[elevatorId].style.transform = `translate(${0}px, ${level}px)`;
 			elevators[elevatorId].style.backgroundColor = "red";
 		}
 		
+		// start a timer for the elevator that is getting busy
 		function startTimer(wantedElevId) {
-			startTime = Math.floor(Date.now()/1000); // set the start time to the current time
-			elevatorStartTime[wantedElevId] = startTime;// update the timer every second
+			// set the start time to the current time in seconds(/1000)
+			startTime = Math.floor(Date.now()/1000); 
+			elevatorStartTime[wantedElevId] = startTime;
 		}
-		
-		function updateTimer() {
-			/*let elapsed = Date.now() - startTime; // calculate the elapsed time in milliseconds
-			timerElement.style.transform = "translate(233px,110px)";
-			timerElement.textContent = (elapsed / 1000).toFixed(1) + "s";*/ // display the elapsed time in seconds with one decimal point
-			
-			let currentTime = performance.now();
-			for (let i = 0; i < elevatorTimers.length; i++) {
-				let timer = elevatorTimers[i];
-				let timeDiff = Math.floor((currentTime - timer.start) / 1000); // convert to seconds
-				let timerEl = document.getElementById(`timer-${timer.elevator}-${timer.floor}`);
-				timerEl.textContent = timeDiff + 's';
-			}
-			setTimeout(updateTimers, 1000); // update timers every second
-		}
-		
+
+		// changes in style for button and its elevator that has arrived, and measure the time it took
 		function elevatorArrived(wantedElevId, curr_button){
+			const sound = new Audio('ding.mp3');
+			sound.play();
 			let currTime = Math.floor(Date.now()/1000);
 			elevatorTimers[wantedElevId] = currTime - elevatorStartTime[wantedElevId];
+			//console.log(elevatorTimers);
 			elevators[wantedElevId].style.backgroundColor = "lightgreen";
-			curr_button.style.backgroundColor = "#dedede";
+			curr_button.style.backgroundColor = "#F5F5F5";
 			curr_button.style.borderColor = "";
 			curr_button.style.color = "mediumSeaGreen";
 			curr_button.style.fontWeight = "bold";
 			curr_button.textContent = "Arrived";
 		}
 		
+		// return the styles of button and elevator to their default
 		function resetElevButton(wantedElevId, curr_button){
 			elevators[wantedElevId].style.backgroundColor = "";
 			curr_button.textContent = "Call";
@@ -288,18 +273,13 @@
 			curr_button.disabled = false;
 		}
 		
+		// handler called upon when a button is clicked
 		function calledAnElevator(event){
 			let curr_button = event.target;
-			/* time stuff 
-			let timerStart = null;
-			timerStart = performance.now();
-			let elapsedTime = performance.now() - timerStart;
-			document.getElementById('timeDisplay').textContent = `${elapsedTime}ms`;*/
-	
-			//startTimer();
-
 			busyButton(curr_button);
 			
+			// check if the are buttons that already wait for some respond
+			// if found- prefer the buttons in the queue(fairness and no starvation)
 			if(buttonQueue.size != 0) {
 				buttonQueue.add(curr_button.id)
 				const id = buttonQueue.values().next().value;
@@ -312,52 +292,35 @@
 				return;
 			}
 			
+			// find the elevator the is closest to button's level
 			const wantedElevId = closestElevator(curr_button.id);
+			// could not find a free elevator, add the button to the queue
 			if(wantedElevId === -1){
 				buttonQueue.add(curr_button.id);
 				return;
 			}
-			if(buttonQueue.has(curr_button.id)){ // the button was in queue and we have a free elevator for him, so dequeue him
+			
+			// the button was in queue and we have a free elevator for him, so dequeue him
+			if(buttonQueue.has(curr_button.id)){ 
 				buttonQueue.delete(curr_button.id);
 			}
-			/*~~~~~~~~~~~~~~~~~~~~~~~ timeeee ~~~~~~~~~~~~~~~~~~
-			let timer = {
-				start: performance.now(), // start time
-				elevator: wantedElevId, // elevator number
-				floor: curr_button.id // floor number
-			};
-			elevatorTimers.push(timer);
-			intervalId = setInterval(updateTimer, 1000);*/
-
+			
+			// button has recieved an elevator, we can disable it. maybe not needed?
 			curr_button.disabled = true;
 			
+			// make elevator move and start measuring its time
 			elevatorAnimation(wantedElevId, curr_button.id);
 			startTimer(wantedElevId);
 			
+			// wait for the time of the elevator to reach its desitnation
 			setTimeout(() => {
-				const sound = new Audio('ding.mp3');
-				sound.play();
-				
-				/*time stuff
-				elapsedTime = performance.now() - timerStart;
-				document.getElementById('timeDisplay').textContent = `${elapsedTime}ms`;
-				timerStart = null;
-				clearInterval(intervalId);
-				startTime = null;*/
-				
+			
 				elevatorArrived(wantedElevId, curr_button);
 				
-				/*~~~~~~~~~~~~~~~~~~ time ~~~~~~~~~~~~~~~~~
-				for (let i = 0; i < elevatorTimers.length; i++) {
-					let timer = elevatorTimers[i];
-					if (timer.elevator === elevatorNumber && timer.floor === floorNumber) {
-						elevatorTimers.splice(i, 1);
-						break;
-					}
-				}*/
+				// wait 3 seconds before reseting the button and elevator
 				setTimeout(() => {
 					resetElevButton(wantedElevId, curr_button)
-					
+					// change the elevator from busy to not busy
 					const index = busyElevators.indexOf(wantedElevId);
 					busyElevators.splice(index, 1);
 					freeElevatorsPos[wantedElevId] = curr_button.id;
@@ -369,6 +332,7 @@
 			button.addEventListener('click', calledAnElevator)
 		});
 		
+		// check if now there is a free elevator for the button
 		function checkButtonQueue(){
 			if(buttonQueue.size != 0) {
 				const id = buttonQueue.values().next().value;
